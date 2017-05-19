@@ -1,3 +1,5 @@
+MAINTAINER Daisuke Miyamoto miyamoto@brain.imi.i.u-tokyo.ac.jp
+
 FROM ubuntu:16.04
 
 ARG NRN_VERSION="7.4"
