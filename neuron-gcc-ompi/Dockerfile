@@ -1,8 +1,5 @@
 FROM ubuntu:16.04
 
-ARG NRN_VERSION="7.4"
-ARG NRN_ARCH="x86_64"
-
 RUN apt-get update \
     && apt-get install -y \
         locales \
@@ -14,12 +11,15 @@ RUN apt-get update \
         python \
         libpython-dev \
         cython \
+        openmpi-bin \
+        openmpi-common \
+        libopenmpi-dev \
     && mkdir work \
     && cd work \
-    && wget http://www.neuron.yale.edu/ftp/neuron/versions/v${NRN_VERSION}/nrn-${NRN_VERSION}.tar.gz \
-    && tar xvzf nrn-${NRN_VERSION}.tar.gz \
-    && cd nrn-${NRN_VERSION} \
-    && ./configure --prefix=`pwd` --without-iv --with-nrnpython=/usr/bin/python \
+    && wget http://www.neuron.yale.edu/ftp/neuron/versions/v7.4/nrn-7.4.tar.gz \
+    && tar xvzf nrn-7.4.tar.gz \
+    && cd nrn-7.4 \
+    && ./configure --prefix=`pwd` --without-iv --with-nrnpython=/usr/bin/python --with-paranrn\
     && make \
     && make install \
     && rm -rf /var/lib/apt/lists/* \
@@ -27,5 +27,3 @@ RUN apt-get update \
     && apt-get clean
 
 ENV LANG en_US.utf8
-
-# CMD /work/nrn-7.4/x86_64/bin/nrniv -python
