@@ -11,4 +11,4 @@ WORKDIR /work
 
 COPY test.hoc /work
 
-CMD /work/nrn-7.4/x86_64/bin/nrniv test.hoc
+CMD nrniv test.hoc

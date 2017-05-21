@@ -41,3 +41,5 @@ RUN apt-get update \
     && apt-get clean
 
 ENV LANG en_US.utf8
+ENV PATH $PATH:/work/nrniv-7.4/x86_64/bin
+
