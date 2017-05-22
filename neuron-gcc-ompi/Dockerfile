@@ -37,9 +37,10 @@ RUN apt-get update \
         gcc \
         g++ \
         build-essential \
+        libopenmpi-dev \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
 ENV LANG en_US.utf8
-ENV PATH $PATH:/work/nrniv-7.4/x86_64/bin
+ENV PATH $PATH:/work/nrn-7.4/x86_64/bin
 
