@@ -41,6 +41,12 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
+RUN cd /work/nrn-7.4/src/nrnpython \
+    && python setup.py install
+
+RUN useradd neuron
+USER neuron
+
 ENV LANG en_US.utf8
 ENV PATH $PATH:/work/nrn-7.4/x86_64/bin
 
