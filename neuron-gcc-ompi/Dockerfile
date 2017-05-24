@@ -21,6 +21,8 @@ RUN apt-get update \
         libncurses-dev \
         python \
         python-pip \
+        ipython \
+        ipython-notebook \
         libpython-dev \
         cython \
         openmpi-bin \
