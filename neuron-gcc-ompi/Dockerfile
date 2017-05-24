@@ -1,6 +1,6 @@
 FROM ubuntu:16.04
 
-MAINTAINER Daisuke Miyamoto miyamoto@brain.imi.i.u-tokyo.ac.jp
+MAINTAINER Daisuke Miyamoto <miyamoto@brain.imi.i.u-tokyo.ac.jp>
 
 ARG NRN_VERSION="7.4"
 ARG NRN_ARCH="x86_64"
@@ -20,6 +20,7 @@ RUN apt-get update \
         build-essential \
         libncurses-dev \
         python \
+        python-pip \
         libpython-dev \
         cython \
         openmpi-bin \
@@ -39,7 +40,7 @@ RUN apt-get update \
         build-essential \
         libopenmpi-dev \
     && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+    && apt-get autoclean
 
 RUN cd /work/nrn-7.4/src/nrnpython \
     && python setup.py install
