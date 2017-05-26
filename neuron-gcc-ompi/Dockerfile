@@ -11,7 +11,7 @@ ARG NRN_CXXFLAGS="-O3"
 
 RUN mkdir /work
 WORKDIR /work
-COPY requirements.txt /work
+#COPY requirements.txt /work
 
 RUN apt-get update \
     && apt-get install -y \
