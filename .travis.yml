@@ -3,14 +3,13 @@ sudo: required
 services:
   - docker
 
-env:
-  - CONTAINER_IMAGE_TAG=neuron:gcc-ompi
-
 before_install:
-  - docker build -t $CONTAINER_IMAGE_TAG neuron-gcc-ompi
+  - docker build -t neuron:gcc-ompi neuron-gcc-ompi
+#  - docker build -t neuron:jupyter neuron-jupyter
 
 script:
-  - docker run $CONTAINER_IMAGE_TAG which nrniv
+  - docker run neuron:gcc-ompi which nrniv
+#  - docker run neuron:jupyter
 
 notifications:
   slack: microbrain:dHXYnMz4KBlHXHLs64ju5h5Y
