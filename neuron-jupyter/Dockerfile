@@ -4,6 +4,9 @@ WORKDIR /work
 USER root
 
 COPY jupyter_notebook_config.py /etc/jupyter/
+COPY requirements.txt /work
+
+RUN pip install -r requirements.txt
 
 RUN cd /work/nrn-7.4/src/nrnpython \
     && python setup.py install

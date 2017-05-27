@@ -11,7 +11,7 @@ ARG NRN_CXXFLAGS="-O3"
 
 RUN mkdir /work
 WORKDIR /work
-COPY requirements.txt /work
+#COPY requirements.txt /work
 
 RUN apt-get update \
     && apt-get install -y \
@@ -30,7 +30,7 @@ RUN apt-get update \
         libopenmpi-dev \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 \
     && pip install --upgrade pip \
-    && pip install -r requirements.txt \
+#    && pip install -r requirements.txt \
     && wget http://www.neuron.yale.edu/ftp/neuron/versions/v${NRN_VERSION}/nrn-${NRN_VERSION}.tar.gz \
     && tar xvzf nrn-${NRN_VERSION}.tar.gz \
     && rm nrn-${NRN_VERSION}.tar.gz \
@@ -45,8 +45,6 @@ RUN apt-get update \
 #        libopenmpi-dev \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get autoclean
-
-RUN pip install --upgrade pip
 
 RUN cd /work/nrn-7.4/src/nrnpython \
     && python setup.py install
