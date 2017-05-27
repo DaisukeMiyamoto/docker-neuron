@@ -8,7 +8,9 @@ env:
 
 before_install:
   - docker build -t $CONTAINER_IMAGE_TAG neuron-gcc-ompi
-  - docker run -d $CONTAINER_IMAGE_TAG
+
+script:
+  - docker run -d $CONTAINER_IMAGE_TAG which nrniv
 
 notifications:
   slack: microbrain:dHXYnMz4KBlHXHLs64ju5h5Y
