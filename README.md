@@ -1,6 +1,8 @@
 docker-neuron
 ---
 
+[![Build Status](https://travis-ci.org/DaisukeMiyamoto/docker-neuron.svg?branch=master)](https://travis-ci.org/DaisukeMiyamoto/docker-neuron)
+
 docker containers for NEURON simulator
 
 # Basic Usage
