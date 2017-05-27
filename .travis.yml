@@ -1,0 +1,15 @@
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - docker build -t neuron:gcc-ompi neuron-gcc-ompi
+#  - docker build -t neuron:jupyter neuron-jupyter
+
+script:
+  - docker run neuron:gcc-ompi which nrniv
+#  - docker run neuron:jupyter
+
+notifications:
+  slack: microbrain:dHXYnMz4KBlHXHLs64ju5h5Y

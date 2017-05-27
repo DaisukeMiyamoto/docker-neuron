@@ -1,6 +1,6 @@
 FROM ubuntu:16.04
 
-MAINTAINER Daisuke Miyamoto miyamoto@brain.imi.i.u-tokyo.ac.jp
+MAINTAINER Daisuke Miyamoto <miyamoto@brain.imi.i.u-tokyo.ac.jp>
 
 ARG NRN_VERSION="7.4"
 ARG NRN_ARCH="x86_64"
@@ -11,6 +11,8 @@ ARG NRN_CXXFLAGS="-O3"
 
 RUN mkdir /work
 WORKDIR /work
+#COPY requirements.txt /work
+
 RUN apt-get update \
     && apt-get install -y \
         locales \
@@ -20,12 +22,15 @@ RUN apt-get update \
         build-essential \
         libncurses-dev \
         python \
+        python-pip \
         libpython-dev \
         cython \
         openmpi-bin \
         openmpi-common \
         libopenmpi-dev \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 \
+    && pip install --upgrade pip \
+#    && pip install -r requirements.txt \
     && wget http://www.neuron.yale.edu/ftp/neuron/versions/v${NRN_VERSION}/nrn-${NRN_VERSION}.tar.gz \
     && tar xvzf nrn-${NRN_VERSION}.tar.gz \
     && rm nrn-${NRN_VERSION}.tar.gz \
@@ -33,13 +38,13 @@ RUN apt-get update \
     && ./configure --prefix=`pwd` ${NRN_CONFIGURE_OPT} CFLAGS=${NRN_CFLAGS} CXXFLAGS=${NRN_CXXFLAGS} \
     && make \
     && make install \
-    && apt-get purge -y --auto-remove \
-        gcc \
-        g++ \
-        build-essential \
-        libopenmpi-dev \
+#    && apt-get purge -y --auto-remove \
+#        gcc \
+#        g++ \
+#        build-essential \
+#        libopenmpi-dev \
     && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+    && apt-get autoclean
 
 RUN cd /work/nrn-7.4/src/nrnpython \
     && python setup.py install
