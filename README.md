@@ -27,6 +27,13 @@ See http://www.neuron.yale.edu/neuron/credits
 >>>
 ```
 
+## run NEURON with Jupyter Notebook
+
+```
+$ docker run -it dmiyamoto/neuron:jupyter
+```
+
+
 
 ## run NEURON dpkg distributed version
 
