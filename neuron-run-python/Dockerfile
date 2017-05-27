@@ -5,7 +5,6 @@ WORKDIR /work
 RUN cd /work/nrn-7.4/src/nrnpython \
     && python setup.py install
 
-RUN useradd neuron
 USER neuron
 
 CMD python
