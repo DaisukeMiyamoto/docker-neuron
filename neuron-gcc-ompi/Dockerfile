@@ -23,8 +23,6 @@ RUN apt-get update \
         libncurses-dev \
         python \
         python-pip \
-        ipython \
-        ipython-notebook \
         libpython-dev \
         cython \
         openmpi-bin \
@@ -46,6 +44,8 @@ RUN apt-get update \
 #        libopenmpi-dev \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get autoclean
+
+RUN pip install --upgrade pip
 
 RUN cd /work/nrn-7.4/src/nrnpython \
     && python setup.py install
