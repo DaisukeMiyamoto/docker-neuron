@@ -31,9 +31,24 @@ See http://www.neuron.yale.edu/neuron/credits
 
 ## run built-in benchmark of the multi compartment hodgkin-huxley model
 
-```
-$ docker run dmiyamoto/neuron:bench ./run.sh
-```
+- single core condition
+
+    ```
+    $ docker run dmiyamoto/neuron:bench ./run.sh
+    ```
+
+- many core condition
+  - 2 core
+
+    ```
+    $ docker run dmiyamoto/neuron:bench ./run.sh 2
+    ```
+
+  - 4 core
+
+    ```
+    $ docker run dmiyamoto/neuron:bench ./run.sh 4
+    ```
 
 
 ## run NEURON with Jupyter Notebook
