@@ -1,0 +1,231 @@
+
+{load_file("stdlib.hoc")}
+//{chdir("./hoc/bench")}
+
+begintemplate Cell_BN_1056
+public init, topol, shape, subsets, geom, biophys, geom_nseg, biophys_inhomo
+public addSectionInput, addSectionOutput
+public setPassiveModel, setActiveModel
+public synlist, x, y, z, rev, position, makeSyn, makeNetCon, getRecPoint
+public inlist, outlist
+public sectionIn, sectionOut, sectionActive
+public dend
+public all
+//public fobj
+public makeNetCon2
+
+create dend[3889]
+
+objref synlist
+objref synno
+
+objref inlist
+objref outlist
+
+objref all
+objref sectionIn, sectionOut, sectionActive
+
+objref fobj
+
+proc init() {
+	fobj = new File()
+	fobj.ropen("Data_BN_1056.txt")
+	sectionIn = new SectionList()
+	sectionOut = new SectionList()
+	all = new SectionList()
+	sectionActive = new SectionList()
+	synlist = new List()
+	synno = new Vector()
+	inlist = new Vector()
+	outlist = new Vector()
+
+	topol()
+	subsets()
+	geom()
+	biophys()
+	geom_nseg()
+}
+
+proc topol() { local from, to, temp
+	shape()
+	for i = 1, fobj.scanvar() {
+		from = fobj.scanvar()
+		to = fobj.scanvar()
+		connect dend[to](1), dend[from](0)
+	}
+}
+
+proc shape() { local i, j, jmax
+	for i = 0, fobj.scanvar() - 1 {
+		dend[fobj.scanvar()] {
+			pt3dclear()
+			//jmax = fobj.scanvar()
+			for j = 1, 2 {
+				pt3dadd(fobj.scanvar(), fobj.scanvar(), fobj.scanvar(), fobj.scanvar())
+				//pt3dadd(x + rev * fobj.scanvar(), y + fobj.scanvar() * -1 + 400, z + fobj.scanvar(), fobj.scanvar())
+			}
+		}
+	}
+}
+
+
+proc subsets() { local i localobj fobj_subset
+/*
+	for i = 0, 3888 { dend[i] all.append() }
+
+	fobj_subset = new File()
+
+	fobj_subset.ropen("Subset_BN_1056_in.txt")
+	i = 0
+	while (1) {
+		value = fobj_subset.scanvar()
+		addSectionInput(value)
+		if (i % 10 == 0) {
+			//dend[value] { insert hh }
+		}
+		inlist.append(value)
+		i += 1
+		if (fobj_subset.eof()) { break }
+	}
+	fobj_subset.close()
+
+	fobj_subset.ropen("./hoc/bench/cells/Subset_BN_1056_out.txt")
+	while (1) {
+		value = fobj_subset.scanvar()
+		addSectionOutput(value)
+		outlist.append(value)
+		if (fobj_subset.eof()) { break }
+	}
+	fobj_subset.close()
+	
+	fobj_subset.ropen("./hoc/bench/cells/Subset_BN_1056_hh.txt")
+	while (1) {
+		value = fobj_subset.scanvar()
+		addSectionActive(value)
+		if (fobj_subset.eof()) { break }
+	}
+	fobj_subset.close()
+*/
+}
+
+proc geom() {
+	forsec all { }
+}
+
+external lambda_f
+proc geom_nseg() {
+	forsec all { nseg = int((L / (0.1 * lambda_f(100)) + .9) / 2) * 2 + 1 }
+}
+
+proc biophys() {
+	forsec all {
+		Ra = 100
+		cm = 1
+	}
+	setPassiveModel()
+	setActiveModel()
+}
+
+proc biophys_inhomo() {}
+
+proc position() {
+	for i = 0, fobj.scanvar() - 1 {
+	dend[i] for j = 0, n3d() - 1 {
+		pt3dchange(j, $1 - x + x3d(j), $2 - y + y3d(j), $3 - z + z3d(j), diam3d(j)) }
+	}
+}
+
+objref syn_
+//syncount = 0
+obfunc makeSyn() { local targetno localobj r
+	/*
+	for i = 0, syncount - 1 {
+		if ($1 == synlistno[i]) return synlist.object(i)
+	}
+	*/
+	for i = 0, synno.size-1 {
+		if ($1 == synno.x[i]) return synlist.object(i)
+	}
+	if ($1 == -1) {
+		r = new Random()
+		r.uniform(0, 3889)
+		targetno = int(r.repick())
+		//r = new Random()
+		//r.uniform(0, inlist.size()-1)
+		//targetno = inlist.x[int(r.repick())]
+	} else {
+		targetno = $1
+	}
+	//	print $1
+	//	synlistno[syncount] = $1
+	synno.append(targetno)
+//	syncount += 1
+	dend[targetno] syn_ = new Exp2Syn_k(0.8) synlist.append(syn_)
+	syn_.tau1 = $2
+	syn_.tau2 = $3
+	syn_.e = $4
+	return syn_
+	/*
+	dend[targetno] syn_ = new Exp2Syn_k(0.5) synlist.append(syn_)
+	syn_.tau1 = $2
+	syn_.tau2 = $3
+	syn_.e = $4
+	return syn_
+	*/
+}
+
+obfunc makeNetCon() { local targetno localobj nc, r
+	// NetCon(source, target, threshold, delay, weight)
+	//print $1
+	if ($1 == -1) {
+		r = new Random()
+		r.uniform(0, 3889)
+		targetno = int(r.repick())
+	} else {
+		targetno = $1
+	}
+	dend[targetno] nc = new NetCon(&v(0.5), $o2, $3, $4, $5)
+	return nc
+}
+
+
+obfunc makeNetCon2() { localobj nc
+        dend[0] nc = new NetCon(&v(1), $o1)
+        nc.threshold = 0
+        return nc
+}
+
+
+
+obfunc getRecPoint() { localobj vec
+	vec = new Vector()
+	vec.append(1200+1)
+	return vec
+}
+
+proc addSectionInput() {
+	dend[$1] sectionIn.append()
+}
+
+proc addSectionOutput() {
+	dend[$1] sectionOut.append()
+}
+
+proc addSectionActive() {
+	dend[$1] sectionActive.append()
+}
+
+proc setPassiveModel() {
+	forsec sectionIn {
+		insert hh
+	}
+}
+
+proc setActiveModel() {
+	forsec sectionActive {
+		insert hh
+	}
+}
+
+endtemplate Cell_BN_1056
+

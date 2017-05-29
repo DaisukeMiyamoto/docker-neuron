@@ -5,10 +5,12 @@ services:
 
 before_install:
   - docker build -t neuron:gcc-ompi neuron-gcc-ompi
+  - docker build -t neuron:bench neuron-benchmark-simple
 #  - docker build -t neuron:jupyter neuron-jupyter
 
 script:
   - docker run neuron:gcc-ompi which nrniv
+  - docker run neuron:bench ./run.sh
 #  - docker run neuron:jupyter
 
 notifications:
