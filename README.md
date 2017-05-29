@@ -30,7 +30,8 @@ See http://www.neuron.yale.edu/neuron/credits
 ```
 
 ## run NEURON with Jupyter Notebook
--run docker image
+
+- run docker image
 
 ```
 $ docker run -p 8888:8888 dmiyamoto/neuron:jupyter
