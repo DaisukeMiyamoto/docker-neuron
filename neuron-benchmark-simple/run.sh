@@ -1,6 +1,11 @@
 #!/bin/bash
 
-NPROC=1
+if [ -n $1 ]; then
+    NPROC=$1
+else
+    NPROC=1
+fi
+echo NPROC=${NPROC}
 export OMP_NUM_THREADS=1
 
 NRNIV="../x86_64/special -mpi"

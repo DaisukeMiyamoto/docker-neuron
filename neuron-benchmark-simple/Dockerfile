@@ -11,5 +11,6 @@ RUN chown -R neuron /work
 USER neuron
 
 RUN nrnivmodl mod \
+    && mkdir log \
     && chmod +x run.sh
 
