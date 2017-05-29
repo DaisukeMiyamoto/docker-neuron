@@ -29,6 +29,13 @@ See http://www.neuron.yale.edu/neuron/credits
 >>>
 ```
 
+## run built-in benchmark of the multi compartment hodgkin-huxley model
+
+```
+$ docker run dmiyamoto/neuron:bench ./run.sh
+```
+
+
 ## run NEURON with Jupyter Notebook
 
 - run docker image
@@ -61,12 +68,6 @@ $ docker run -p 8888:8888 dmiyamoto/neuron:jupyter
 $ docker run -it dmiyamoto/neuron:dpkg
 ```
 
-# simulation built-in version
-## benchmark of the multi compartment hodgkin-huxley model (devel)
-
-```
-$ docker pull dmiyamoto/neuron:bench
-```
 
 
 # Reference
