@@ -1,0 +1,276 @@
+//{chdir("./hoc/bench")}
+
+{load_file("nrngui.hoc")}
+
+if (!name_declared("MODEL")) { MODEL=0 }
+if (!name_declared("NSTIM_POS")) { NSTIM_POS=1 }
+if (!name_declared("NSTIM_NUM")) { NSTIM_NUM=1 }
+if (!name_declared("NCELLS")) { NCELLS=1 }
+if (!name_declared("NSYNAPSE")) { NSYNAPSE=1 }
+if (!name_declared("SYNAPSE_RANGE")) { SYNAPSE_RANGE=1 }
+if (!name_declared("STOPTIME")) { STOPTIME=100 }
+if (!name_declared("NETWORK")) { NETWORK=0 }
+if (!name_declared("NTHREAD")) { NTHREAD=1 }
+if (!name_declared("MULTISPLIT")) { MULTISPLIT=0 }
+if (!name_declared("SPIKE_COMPRESS")) { CACHE_EFFICIENT=0 }
+if (!name_declared("SPIKE_COMPRESS")) { SPIKE_COMPRESS=0 }
+
+if (!name_declared("SHOW_SPIKE")) { SHOW_SPIKE=0 }
+if (!name_declared("DBG_PRINT")) { DBG_PRINT=0 }
+
+
+{load_file("CellTemplate_BN_1056_Parallel3.hoc")}
+
+objref pc
+objref cells, nclist
+objref stim, ncstim, ncstimlist, stimlist, synlist
+objref tvec, idvec
+
+proc mkcells () { local i, n, j, num_cell localobj cell, nc, syn, nil
+    cells = new List()
+    tvec = new Vector()
+    idvec = new Vector()
+    nclist = new List()
+    synlist = new List()
+    num_cell = $1
+    n = int(num_cell/pc.nhost)
+    
+    for(i=0; i<n; i+=1){
+	cell = new Cell_BN_1056()
+	cells.append(cell)
+	pc.set_gid2node(i + (n * pc.id), pc.id)
+	nc = cell.makeNetCon(2500, nil, 0, 0, 1.0)
+	pc.cell(i + (n * pc.id), nc)
+	nc.delay = 0.1 // 0.6
+	nc.weight = 0.05
+	nc.record(tvec, idvec, nc.srcgid)
+	nclist.append(nc)
+	
+	syn = cell.makeSyn(-1, 1, 5, 0)
+	synlist.append(syn)
+    }
+    pc.barrier()
+}
+
+
+tmp_pre=0
+tmp_post=0
+
+proc connectcells(){ local i, target_id, network_type, num_cell, num_synapse, num_comp, synapse_range localobj src, target, syn, nc, cell, rnd, nil
+    pc.barrier()
+    num_cell = $1
+    network_type = $2
+    num_synapse = $3
+    synapse_range = $4
+    num_comp = 3800
+    
+    rnd = new Random()
+    rnd.uniform(0, num_cell-1)
+    if(network_type == 0 || network_type == 1 || network_type==2){
+	for(i=0; i<num_cell; i=i+1){
+	    if(pc.gid_exists(i)){
+		for(j=0; j<num_synapse; j=j+1){
+                    cell = pc.gid2obj(i)
+                    pc.set_gid2node(4000000+i*num_synapse+j, pc.id)
+
+		    if(network_type==2){
+	                    nc = cell.makeNetCon((1+i*num_synapse+j)%num_comp, nil, 0, 0, 0.1)
+		    }else{
+	                    nc = cell.makeNetCon(-1, nil, 0, 0, 0.1)
+		    }
+
+                    pc.cell(4000000+i*num_synapse+j, nc)
+		    nclist.append(nc)
+		    nc.delay = 0.5 // 0.6
+		    nc.weight = 0.05
+		    tmp_pre=tmp_pre+1
+		}
+	    }
+	}
+	pc.barrier()
+
+	for(i=0; i<num_cell; i=i+1){
+	    for(j=0; j<num_synapse; j=j+1){
+		if(network_type==0){
+		    target_id = (1+i+j*synapse_range)%num_cell
+		}else if(network_type==1 || network_type==2){
+		    target_id = int(rnd.repick())
+		}
+		if(pc.gid_exists(target_id) && i!=target_id){
+		    target = pc.gid2cell(target_id)
+		    if(network_type==2){
+			    syn = target.makeSyn((100+i*num_synapse+j)%num_comp, 1, 5, 0)
+		    }else{
+			    syn = target.makeSyn(-1, 1, 5, 0)
+		    }
+		    
+		    nc = pc.gid_connect(4000000+i*num_synapse+j, syn)
+		    nclist.append(nc)
+		    nc.delay = 0.5 // 0.6
+		    nc.weight = 0.05
+		    synlist.append(syn)
+		    tmp_post=tmp_post+1
+		}
+	    }
+	}
+    }else{
+	printf("ERROR : invalid network type.\n")
+	quit()
+    }
+}
+
+proc setModel(){
+    model = $1
+    
+    if(model==1){
+	forall { insert pas }
+    }else if(model==2){
+	forall { insert hh_k }
+    }else{
+	forall { insert hh }
+    }
+}
+
+
+proc print_stat() {
+    for i = 0, cells.count-1 {
+	printf("[proc:%02d] synlist %d\n", pc.id, cells.object(i).synlist.count())
+    }
+}
+
+
+// $1 : cell id for stimulate
+proc mkstim() { local i, num_stim_pos, stim_cell, num_cell, num_stim
+    num_cell = $1
+    num_stim_pos = $2
+    num_stim = $3
+    ncstimlist = new List()
+    stimlist = new List()
+
+    for(i=0; i<num_stim; i=i+1){
+	stim_cell = i * (num_cell/(num_stim+1))
+	if(pc.gid_exists(stim_cell)){
+		//printf("[makestim:%d] CELL %d\n", pc.id, stim_cell)
+	    stim = new NetStim()
+	    stim.number = 10
+	    stim.start = 2
+	    stim.interval = 50
+	    
+	    ncstim = new NetCon(stim, pc.gid2cell(stim_cell).synlist.object(0))
+	    ncstim.delay = 1
+	    ncstim.weight = 0.1
+	    
+	    stimlist.append(stim)
+	    ncstimlist.append(ncstim)
+	}
+    }
+}
+
+proc spikeout() { local i, count, rank localobj fobj, tmpmt
+    /*
+    strdef filename
+    count = 0
+    fobj = new File()
+    tmpmt = new Matrix()
+    sprint(filename, "./result/spike_%010d.txt", pc.id)
+    fobj.wopen(filename)
+    fobj.printf("time [ms]\t cell_id\n")
+    tmpmt.resize(tvec.size(),2)
+    tmpmt.setcol(0, tvec)
+    tmpmt.setcol(1, idvec)
+    tmpmt.fprint(0, fobj, "\t%g\t")
+    fobj.close
+    */
+    
+    if(pc.id == 0){ printf("\n\ttime [ms]\t cell_id\n") }
+    pc.barrier()
+    for i=0, tvec.size()-1{
+	printf("SPIKE : \t %f\t %d\n", tvec.x[i], idvec.x[i])
+    }
+}
+
+
+proc printSpikeStat() { local nsendmax, nsend, nrecv, nrecv_useful
+    nsendmax = pc.spike_statistics(&nsend, &nrecv, &nrecv_useful)
+    printf("[%d] nsendmax=%d nsend=%d nrecv=%d nrecv_useful=%d\n", pc.id, nsendmax, nsend,nrecv, nrecv_useful)
+}
+
+// start main
+{
+    pc = new ParallelContext()
+    if(NTHREAD != 0){ pc.nthread(NTHREAD) }
+    if(SPIKE_COMPRESS==1){
+	if(pc.id ==0){ printf("pc.spike_compress(1, 0)\n") }
+	pc.spike_compress(1, 0)
+    }else if(SPIKE_COMPRESS==2){
+	pc.spike_compress(0, 1, 1)
+    }
+    
+    if(pc.id == 0){
+	printf("\nCondition : \n")
+	printf(" * Process=%d, Thread=%d\n", pc.nhost, NTHREAD)
+	printf(" * NSTEP=%d (STOPTIME=%f / dt=%f)\n", STOPTIME/dt, STOPTIME, dt)
+	printf(" * Model=%s, nCELLS=%d, nSYNAPSE=%d\n", "BN_1056", NCELLS, NSYNAPSE)
+	printf(" * NSTIM_POS=%d, NSTIM_NUM=%d, SYNAPSE_RANGE=%d\n", NSTIM_POS, NSTIM_NUM, SYNAPSE_RANGE)
+	printf(" * CacheEfficient=%d, SpikeCompressMode=%d\n\n", CACHE_EFFICIENT, SPIKE_COMPRESS)
+	printf("[id:0] start modeling\n")
+    }
+    start_time = pc.time
+    mkcells(NCELLS)
+    connectcells(NCELLS, NETWORK, NSYNAPSE, SYNAPSE_RANGE)
+    
+    setModel(MODEL)
+
+    //if(pc.id == 0){ print_stat() }
+
+    mkstim(NCELLS, NSTIM_POS, NSTIM_NUM)
+
+//    spikerecord()
+    
+    pc.barrier()
+    //if(MULTISPLIT==1){ pc.multisplit() }
+    //if(CACHE_EFFICIENT==1){ pc.cache_efficient(1) }
+    if(CACHE_EFFICIENT==1){ pc.multisplit() }
+    
+    pc.set_maxstep(5)
+    stdinit()
+    tstop = STOPTIME
+    
+    if(pc.id == 0){ printf("[id:0] Modeling Finished.\n") }
+    if(pc.id == 0){ printf("[id:0] Calculation Starts\n") }
+    pc.barrier()
+    
+    modelfin_time = pc.time
+    start_waittime = pc.wait_time
+    pc.psolve(tstop)
+    if(pc.id == 0){ printf("[id:0] Calculation Finished !!\n") }
+    pc.barrier()
+    stop_time = pc.time
+    stop_waittime = pc.wait_time()
+    stop_steptime = pc.step_time()
+    stop_sendtime = pc.send_time()
+    
+    pc.barrier()
+    if(pc.id ==0){
+	printf("\nRESULT : \n")
+	printf(" * SpikeSendMax=%d\n", pc.spike_statistics() )
+	printf(" * step=%f sec, wait=%f sec, send=%f sec\n", stop_steptime, stop_waittime-start_waittime, stop_sendtime)
+	printf(" * modeling time : %f sec\n", modelfin_time - start_time)
+	printf(" * core time : %f sec\n", stop_time-modelfin_time)
+    }
+    pc.barrier()
+    
+    printf("[%d] NC = %d, SYN = %d, tmp_pre = %d, tmp_post = %d\n", pc.id, nclist.count(), synlist.count(), tmp_pre, tmp_post)
+
+
+    if(SHOW_SPIKE==1){ spikeout() }
+    printSpikeStat()
+
+    //quit()
+    //pc.max_histogram()
+    
+    pc.runworker()
+    pc.done()
+}
+
+quit()
