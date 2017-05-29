@@ -11,6 +11,7 @@ before_install:
 script:
   - docker run neuron:gcc-ompi which nrniv
   - docker run neuron:bench ./run.sh 2
+# TODO: compare result to prepared file
 #  - docker run neuron:jupyter
 
 notifications:
