@@ -1,8 +1,10 @@
-FROM neuron:gcc-ompi
+FROM dmiyamoto/neuron:gcc-ompi
 MAINTAINER Daisuke Miyamoto <miyamoto@brain.imi.i.u-tokyo.ac.jp>
 WORKDIR /work
+USER root
 
 COPY jupyter_notebook_config.py /etc/jupyter/
+COPY requirements.txt /work
 
 RUN pip install -r requirements.txt
 
