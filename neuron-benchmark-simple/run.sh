@@ -1,9 +1,9 @@
 #!/bin/bash
 
-if [ -n $1 ]; then
-    NPROC=$1
-else
+if [ $# -ne 1 ]; then
     NPROC=1
+else
+    NPROC=$1
 fi
 echo NPROC=${NPROC}
 export OMP_NUM_THREADS=1

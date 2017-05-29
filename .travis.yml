@@ -10,7 +10,7 @@ before_install:
 
 script:
   - docker run neuron:gcc-ompi which nrniv
-  - docker run neuron:bench ./run.sh
+  - docker run neuron:bench ./run.sh 2
 #  - docker run neuron:jupyter
 
 notifications:
