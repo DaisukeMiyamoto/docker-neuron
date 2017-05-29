@@ -51,6 +51,7 @@ $ docker run -p 8888:8888 dmiyamoto/neuron:jupyter
 
 - Access to the printed URL by a browser
 
+![jupyter-neuron](./docs/images/neuron-jupyter.png)
 
 
 ## run NEURON dpkg distributed version
