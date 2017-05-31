@@ -82,6 +82,11 @@ $ docker run -it dmiyamoto/neuron:gcc-ompi
 
 2. Access to the printed URL by a browser
 
+3. You could find some NEURON+Python examples in `examples` directory.
+  - [example1](./neuron-jupyter/examples/example1.ipnb): single cell (1 compartment) with current clamp stimulation
+  - [example2](./neuron-jupyter/examples/example2.ipnb): single cell (some compartments) with current clamp stimulation
+  - [example3](./neuron-jupyter/examples/example3.ipnb): single cell (some sompartments) with synaptic stimulation
+  - [example4](./neuron-jupyter/examples/example4.ipnb): many cells with syn-fire chain network
 
 ## run NEURON dpkg distributed version
 
