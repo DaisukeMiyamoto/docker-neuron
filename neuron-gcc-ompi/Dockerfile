@@ -49,7 +49,7 @@ RUN apt-get update \
 RUN cd /work/nrn-7.4/src/nrnpython \
     && python setup.py install
 
-RUN useradd neuron
+RUN useradd -m neuron
 USER neuron
 
 ENV LANG en_US.utf8
